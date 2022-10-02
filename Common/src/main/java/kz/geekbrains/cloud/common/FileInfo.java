@@ -9,72 +9,71 @@ import java.time.ZoneOffset;
 
 public class FileInfo implements Serializable {
 
-  public enum FileType {
-    FILE("F"),
-    DIRECTORY("D");
+    public enum FileType {
+        FILE("F"), DIRECTORY("D");
 
-    private String name;
+        private String name;
 
-    public String getName() {
-      return name;
+        public String getName() {
+            return name;
+        }
+
+        FileType(String name) {
+            this.name = name;
+        }
+
+        public static FileType getTypeByString(String string) {
+            if (string.equals("FILE")) {
+                return FILE;
+            }
+            if (string.equals("DIRECTORY")) {
+                return DIRECTORY;
+            }
+            return null;
+        }
     }
 
-    FileType(String name) {
-      this.name = name;
+    private String fileName;
+    private FileType type;
+    private long size;
+    private LocalDateTime lastModified;
+
+    public FileInfo(Path path) {
+        try {
+            this.fileName = path.getFileName().toString();
+            this.type = Files.isDirectory(path) ? FileType.DIRECTORY : FileType.FILE;
+            this.size = Files.isDirectory(path) ? -1L : Files.size(path);
+            this.lastModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.ofHours(0));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
-    public static FileType getTypeByString(String string) {
-      if (string.equals("FILE")) {
-        return FILE;
-      }
-      if (string.equals("DIRECTORY")) {
-        return DIRECTORY;
-      }
-      return null;
+    public FileInfo(String fileName, String type, long size, LocalDateTime lastModified) {
+        this.fileName = fileName;
+        this.type = FileType.getTypeByString(type);
+        this.size = size;
+        this.lastModified = lastModified;
     }
-  }
 
-  private String fileName;
-  private FileType type;
-  private long size;
-  private LocalDateTime lastModified;
-
-  public FileInfo(Path path) {
-    try {
-      this.fileName = path.getFileName().toString();
-      this.type = Files.isDirectory(path) ? FileType.DIRECTORY : FileType.FILE;
-      this.size = Files.isDirectory(path) ? -1L : Files.size(path);
-      this.lastModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.ofHours(0));
-    } catch (IOException e) {
-      e.printStackTrace();
+    public String getFileName() {
+        return fileName;
     }
-  }
 
-  public FileInfo(String fileName, String type, long size, LocalDateTime lastModified) {
-    this.fileName = fileName;
-    this.type = FileType.getTypeByString(type);
-    this.size = size;
-    this.lastModified = lastModified;
-  }
+    public FileType getType() {
+        return type;
+    }
 
-  public String getFileName() {
-    return fileName;
-  }
+    public long getSize() {
+        return size;
+    }
 
-  public FileType getType() {
-    return type;
-  }
+    public LocalDateTime getLastModified() {
+        return lastModified;
+    }
 
-  public long getSize() {
-    return size;
-  }
-
-  public LocalDateTime getLastModified() {
-    return lastModified;
-  }
-
-  @Override
-  public String toString() {
-    return fileName + "$ " + type + "$ " + size + "$ " + lastModified;
-  }
+    @Override
+    public String toString() {
+        return fileName + '$' + type + '$' + size + '$' + lastModified;
+    }
 }
