@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<StackPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+           fx:controller="kz.geekbrains.cloud.client.gui.Controller">
+    <VBox fx:id="mainView" alignment="CENTER" visible="false">
+
+        <HBox spacing="10">
+            <Button text="Upload" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                    onAction="#uploadAction"/>
+            <Button text="Download" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                    onAction="#downloadAction"/>
+            <Button text="Delete" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                    onAction="#deleteAction"/>
+            <Button text="Make directory" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                    onAction="#makeDirectory"/>
+
+            <padding>
+                <Insets bottom="5" left="5" right="5" top="5"/>
+            </padding>
+        </HBox>
+        <HBox>
+            <TextField fx:id="pathField" editable="FALSE" HBox.hgrow="ALWAYS"/>
+            <Button text="Path up" onAction="#pathUpAction"/>
+        </HBox>
+        <TableView fx:id="filesTable" VBox.vgrow="ALWAYS"/>
+    </VBox>
+</StackPane>

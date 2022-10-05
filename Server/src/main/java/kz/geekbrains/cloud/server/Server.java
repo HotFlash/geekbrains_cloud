@@ -1,56 +1,60 @@
 package kz.geekbrains.cloud.server;
+
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.string.StringEncoder;
-import kz.geekbrains.cloud.common.Constants;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import lombok.extern.log4j.Log4j2;
-
-import java.nio.charset.StandardCharsets;
+import kz.geekbrains.cloud.common.Constants;
+import kz.geekbrains.cloud.server.service.CreateUserRep;
+import java.nio.file.Paths;
 
 @Log4j2
 public class Server {
+    private ChannelFuture channelFuture;
 
-    private final int port;
 
-    public Server(int port) {
-        this.port = port;
-    }
+    public void start() throws Exception {
+        log.info("Server started");
 
-    public static void main(String[] args) throws InterruptedException {
-        new Server(Constants.PORT).run();
-    }
-
-    private void run() throws InterruptedException {
-        EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+        EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
-
         try {
-            ServerBootstrap server = new ServerBootstrap();
-            server.group(bossGroup, workerGroup);
-            server.channel(NioServerSocketChannel.class);
-            server.option(ChannelOption.SO_BACKLOG, 128);
-            server.childOption(ChannelOption.SO_KEEPALIVE, true);
-            server.childHandler(new ChannelInitializer() {
-                @Override
-                protected void initChannel(Channel ch) throws Exception {
-                    ch.pipeline().addLast(
-                            new StringEncoder(StandardCharsets.UTF_8),
-                            new ObjectDecoder(Constants.MAXIMUM_OBJECT_SIZE, ClassResolvers.cacheDisabled(null)),
-                            new ServerHandler()
-                    );
-                }
-            });
-            ChannelFuture future = server.bind(port).sync();
-            log.info("server is running");
-            future.channel().closeFuture().sync();
-
+            ServerBootstrap b = new ServerBootstrap();
+            b.group(bossGroup, workerGroup)
+                    .channel(NioServerSocketChannel.class)
+                    .childHandler(new ChannelInitializer<SocketChannel>() {
+                        @Override
+                        protected void initChannel(SocketChannel socketChannel) {
+                            socketChannel.pipeline().addLast(
+                                    new ObjectDecoder(Constants.MAXIMUM_OBJECT_SIZE, ClassResolvers.cacheDisabled(null)),
+                                    new ObjectEncoder(),
+                                    new ServerHandler()
+                            );
+                        }
+                    });
+            channelFuture = b.bind(Constants.PORT).sync();
+            channelFuture.channel().closeFuture().sync();
         } finally {
-            bossGroup.shutdownGracefully();
             workerGroup.shutdownGracefully();
+            bossGroup.shutdownGracefully();
         }
     }
+
+    public void stop() {
+        channelFuture.channel().close();
+
+    }
+
+    public static void main(String[] args) throws Exception {
+        new Server().start();
+    }
+
+
 }
