@@ -4,8 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @AllArgsConstructor
-public abstract class ServerErrorResponse extends AbstractMessage {
-
+public abstract class ServerSuccessResponse extends AbstractMessage {
     @Getter
-    private String reason;
+    private Boolean result;
 }

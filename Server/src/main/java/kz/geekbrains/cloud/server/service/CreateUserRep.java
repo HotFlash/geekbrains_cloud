@@ -6,7 +6,7 @@ import java.io.File;
 
 @Log4j2
 public class CreateUserRep {
-    public void createFolder(String pathname) {
+    public static void createFolder(String pathname) {
         File folder = new File(pathname);
         if (!folder.exists()) {
             if (folder.mkdir()) {

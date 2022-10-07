@@ -7,6 +7,8 @@ import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import org.apache.commons.io.FileUtils;
+
 public class FileInfo implements Serializable {
 
     public enum FileType {
@@ -35,14 +37,14 @@ public class FileInfo implements Serializable {
 
     private String fileName;
     private FileType type;
-    private long size;
+    private double size;
     private LocalDateTime lastModified;
 
     public FileInfo(Path path) {
         try {
             this.fileName = path.getFileName().toString();
             this.type = Files.isDirectory(path) ? FileType.DIRECTORY : FileType.FILE;
-            this.size = Files.isDirectory(path) ? -1L : Files.size(path);
+            this.size = Files.isDirectory(path) ? FileUtils.sizeOf(path.toFile()) : Files.size(path);
             this.lastModified = LocalDateTime.ofInstant(Files.getLastModifiedTime(path).toInstant(), ZoneOffset.ofHours(0));
         } catch (IOException e) {
             e.printStackTrace();
@@ -64,8 +66,8 @@ public class FileInfo implements Serializable {
         return type;
     }
 
-    public long getSize() {
-        return size;
+    public double getSize() {
+        return size / (1024 * 1024);
     }
 
     public LocalDateTime getLastModified() {

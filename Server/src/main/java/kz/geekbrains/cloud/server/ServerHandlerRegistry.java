@@ -6,6 +6,8 @@ import kz.geekbrains.cloud.common.FileMessage;
 import kz.geekbrains.cloud.common.FileRequest;
 import kz.geekbrains.cloud.common.MakeDirRequest;
 import kz.geekbrains.cloud.common.ListRequest;
+import kz.geekbrains.cloud.common.auth.AuthRequest;
+import kz.geekbrains.cloud.common.reg.RegRequest;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,7 +19,8 @@ public class ServerHandlerRegistry {
 
     static {
         Map<Class<? extends AbstractMessage>, ServerRequestHandler> requestHandlerMap = new HashMap<>();
-
+        requestHandlerMap.put(AuthRequest.class, new AuthHandler(Server.getAuthService()));
+        requestHandlerMap.put(RegRequest.class, new RegHandler(Server.getAuthService()));
         requestHandlerMap.put(ListRequest.class, new ListRequestHandler());
         requestHandlerMap.put(FileMessage.class, new FileUploadHandler());
         requestHandlerMap.put(FileRequest.class, new FileRequestHandler());

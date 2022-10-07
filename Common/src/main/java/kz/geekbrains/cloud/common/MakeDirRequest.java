@@ -1,6 +1,5 @@
 package kz.geekbrains.cloud.common;
 
-import kz.geekbrains.cloud.common.AbstractFileMessage;
 
 public class MakeDirRequest extends AbstractFileMessage {
 

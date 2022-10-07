@@ -23,18 +23,18 @@ public class CreateTableView {
         fileNameColumn.setCellValueFactory(param -> new SimpleStringProperty(param.getValue().getFileName()));
         fileNameColumn.setPrefWidth(350);
 
-        TableColumn<FileInfo, Long> fileSizeColumn = new TableColumn<>("Size");
+        TableColumn<FileInfo, Double> fileSizeColumn = new TableColumn<>("Size");
         fileSizeColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().getSize()));
         fileSizeColumn.setPrefWidth(125);
-        fileSizeColumn.setCellFactory(column -> new TableCell<FileInfo, Long>() {
+        fileSizeColumn.setCellFactory(column -> new TableCell<FileInfo, Double>() {
             @Override
-            protected void updateItem(Long item, boolean empty) {
+            protected void updateItem(Double item, boolean empty) {
                 super.updateItem(item, empty);
                 if (item == null || empty) {
                     setText("");
                     setStyle("");
                 } else {
-                    String text = String.format("%,d b", item);
+                    String text = String.format("%,.2f Mb", item);
                     if (item == -1L) {
                         text = "";
                     }
@@ -51,5 +51,7 @@ public class CreateTableView {
 
         filesTable.getColumns().addAll(fileTypeColumn, fileNameColumn, fileSizeColumn, fileDateColumn);
         filesTable.getSortOrder().add(fileTypeColumn);
+
+
     }
 }

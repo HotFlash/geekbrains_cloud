@@ -12,17 +12,21 @@ import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import lombok.extern.log4j.Log4j2;
 import kz.geekbrains.cloud.common.Constants;
-import kz.geekbrains.cloud.server.service.CreateUserRep;
-import java.nio.file.Paths;
+import kz.geekbrains.cloud.server.service.auth.AuthService;
+
 
 @Log4j2
 public class Server {
+    private static final AuthService authService = new AuthService();
     private ChannelFuture channelFuture;
 
+    public static AuthService getAuthService() {
+        return authService;
+    }
 
     public void start() throws Exception {
         log.info("Server started");
-
+        authService.start();
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
         try {

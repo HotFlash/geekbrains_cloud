@@ -1,17 +1,25 @@
 package kz.geekbrains.cloud.client.gui;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
+import javafx.scene.paint.Color;
 import javafx.stage.FileChooser;
 import kz.geekbrains.cloud.client.network.NetworkClient;
 import kz.geekbrains.cloud.common.Constants;
 import kz.geekbrains.cloud.common.FileInfo;
 import kz.geekbrains.cloud.common.FileInfo.FileType;
 import kz.geekbrains.cloud.common.ListRequest;
+import kz.geekbrains.cloud.common.auth.AuthRequest;
+import kz.geekbrains.cloud.common.reg.RegRequest;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.io.File;
@@ -35,18 +43,40 @@ public class Controller implements Initializable {
     @FXML
     @Getter
     TextField pathField;
+    @FXML
+    TextField authLogin;
+    @FXML
+    PasswordField authPassword;
+    @FXML
+    Label authMessage;
+
+    @FXML
+    Label cloudSizeMessage;
+    @FXML
+    GridPane regView;
+    @FXML
+    TextField regLogin;
+    @FXML
+    PasswordField regPassword;
+    @FXML
+    PasswordField regPasswordRep;
+    @FXML
+    Label regMessage;
+
+    @Getter
+    @Setter
+    String login;
+    @FXML
+    GridPane authView;
+
 
     @Getter
     private final FileChooser fileChooser = new FileChooser();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        try {
-            connection();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
         createRepositoryFolder();
+        changeStageToAuth();
         CreateTableView.action(this);
 
         filesTable.setOnMouseClicked(event -> {
@@ -58,28 +88,103 @@ public class Controller implements Initializable {
                 }
             }
         });
-
-        changeStageToMainView();
     }
 
 
-    public void changeStageToMainView() {
+    public void changeStageToAuth() {
+        authLogin.clear();
+        authPassword.clear();
+        authMessage.setVisible(false);
 
-        mainView.setVisible(true);
-        networkClient.send(new ListRequest("user"));
+        authView.setVisible(true);
+        regView.setVisible(false);
+        mainView.setVisible(false);
+    }
+
+    public void register() throws InterruptedException {
+        connection();
+
+        if (regLogin.getText().isEmpty() || regPassword.getText().isEmpty() || regPasswordRep.getText().isEmpty()) {
+            regMessage.setTextFill(Color.RED);
+            regMessage.setText("Enter login, password and name");
+            regMessage.setVisible(true);
+        } else if (!regPassword.getText().equals(regPasswordRep.getText())) {
+            regMessage.setTextFill(Color.RED);
+            regMessage.setText("Passwords do not match");
+            regMessage.setVisible(true);
+        } else {
+            log.info("Trying to register a new user: " + regLogin.getText());
+            networkClient.send(new RegRequest(regLogin.getText(), regPassword.getText(), 2));
+
+        }
     }
 
     public void updateList(List<FileInfo> list) {
         filesTable.getItems().clear();
         filesTable.getItems().addAll(list);
         filesTable.sort();
+        double cloudSize = 0;
+        for (FileInfo fileInfo : list) {
+            cloudSize += fileInfo.getSize();
+        }
+        showCloudUsage("Cloud size is: " + String.format("%,.2f Mb", cloudSize), Color.DARKBLUE);
     }
 
     public void pathUpAction() {
         String path = pathField.getText();
-        if (!path.equals("user")) {
+        if (!path.equals(login)) {
             networkClient.send(new ListRequest(Paths.get(path).getParent().toString()));
         }
+    }
+
+    public void showAuthMessage(String reason, Color color) {
+        authMessage.setTextFill(color);
+        authMessage.setText(reason);
+        authMessage.setVisible(true);
+    }
+
+    public void showCloudUsage(String capacity, Color color) {
+        cloudSizeMessage.setTextFill(color);
+        cloudSizeMessage.setText(capacity);
+        cloudSizeMessage.setVisible(true);
+    }
+
+    public void showRegMessage(String reason, Color color) {
+        regMessage.setTextFill(color);
+        regMessage.setText(reason);
+        regMessage.setVisible(true);
+    }
+
+    public void enterCloud() throws InterruptedException {
+        connection();
+
+        if (authLogin.getText().isEmpty() || authPassword.getText().isEmpty()) {
+            authMessage.setText("Enter login and password");
+            authMessage.setVisible(true);
+        } else {
+            log.info("Trying to log in: " + authLogin.getText());
+            networkClient.send(new AuthRequest(authLogin.getText(), authPassword.getText()));
+        }
+    }
+
+    public void changeStageToReg() {
+        regLogin.clear();
+        regPassword.clear();
+        regPasswordRep.clear();
+        regMessage.setVisible(false);
+
+        authView.setVisible(false);
+        mainView.setVisible(false);
+        regView.setVisible(true);
+
+    }
+
+    public void changeStageToCloud() {
+        authView.setVisible(false);
+        regView.setVisible(false);
+        mainView.setVisible(true);
+
+        networkClient.send(new ListRequest(login));
     }
 
     public void deleteAction() {
@@ -112,6 +217,10 @@ public class Controller implements Initializable {
             }
 
         }
+    }
+
+    public void exitAction() {
+        Platform.exit();
     }
 
     private void connection() throws InterruptedException {
