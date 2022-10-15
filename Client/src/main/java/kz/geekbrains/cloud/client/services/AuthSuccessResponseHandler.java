@@ -7,6 +7,8 @@ import lombok.extern.log4j.Log4j2;
 import kz.geekbrains.cloud.client.gui.Controller;
 import kz.geekbrains.cloud.common.auth.AuthSuccessResponse;
 
+import java.util.Objects;
+
 @Log4j2
 public class AuthSuccessResponseHandler implements ClientRequestHandler {
 
@@ -16,11 +18,16 @@ public class AuthSuccessResponseHandler implements ClientRequestHandler {
 
         String login = authSuccessResponse.getLogin();
 
-        log.info("Authorization completed successfully");
+        if (Objects.equals(login, "true")) {
+            log.info("password changed");
 
-        Platform.runLater(() -> {
-            controller.setLogin(login);
-            controller.changeStageToCloud();
-        });
+        } else {
+            log.info("Authorization completed successfully");
+
+            Platform.runLater(() -> {
+                controller.setLogin(login);
+                controller.changeStageToCloud();
+            });
+        }
     }
 }

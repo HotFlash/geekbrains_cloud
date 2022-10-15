@@ -1,13 +1,9 @@
 package kz.geekbrains.cloud.server;
 
-import kz.geekbrains.cloud.common.AbstractMessage;
-import kz.geekbrains.cloud.common.DeleteRequest;
-import kz.geekbrains.cloud.common.FileMessage;
-import kz.geekbrains.cloud.common.FileRequest;
-import kz.geekbrains.cloud.common.MakeDirRequest;
-import kz.geekbrains.cloud.common.ListRequest;
+import kz.geekbrains.cloud.common.*;
 import kz.geekbrains.cloud.common.auth.AuthRequest;
 import kz.geekbrains.cloud.common.reg.RegRequest;
+import kz.geekbrains.cloud.server.service.ChangeUsersDetailsHandler;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -21,11 +17,13 @@ public class ServerHandlerRegistry {
         Map<Class<? extends AbstractMessage>, ServerRequestHandler> requestHandlerMap = new HashMap<>();
         requestHandlerMap.put(AuthRequest.class, new AuthHandler(Server.getAuthService()));
         requestHandlerMap.put(RegRequest.class, new RegHandler(Server.getAuthService()));
+        requestHandlerMap.put(UserConfigRequest.class, new UserConfigHandler(Server.getAuthService()));
         requestHandlerMap.put(ListRequest.class, new ListRequestHandler());
         requestHandlerMap.put(FileMessage.class, new FileUploadHandler());
         requestHandlerMap.put(FileRequest.class, new FileRequestHandler());
         requestHandlerMap.put(DeleteRequest.class, new DeleteRequestHandler());
         requestHandlerMap.put(MakeDirRequest.class, new MakeDirRequestHandler());
+        requestHandlerMap.put(ChangeUsersDetailsRequest.class, new ChangeUsersDetailsHandler(Server.getAuthService()));
 
         REQUEST_HANDLER_MAP = Collections.unmodifiableMap(requestHandlerMap);
     }

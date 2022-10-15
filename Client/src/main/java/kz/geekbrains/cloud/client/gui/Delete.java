@@ -17,7 +17,7 @@ public class Delete {
     public static void action(Controller controller) {
         TableView<FileInfo> filesTable = controller.getFilesTable();
         TextField pathField = controller.getPathField();
-        NetworkClient nettyClient = controller.getNetworkClient();
+        NetworkClient networkClient = controller.getNetworkClient();
 
         if (filesTable.getSelectionModel().getSelectedItem() == null) {
             Alert alert = new Alert(AlertType.WARNING, "Please, select the File", ButtonType.OK);
@@ -28,7 +28,7 @@ public class Delete {
         String fileName = filesTable.getSelectionModel().getSelectedItem().getFileName();
         String path = pathField.getText();
 
-        nettyClient.send(new DeleteRequest(fileName, path));
+        networkClient.send(new DeleteRequest(fileName, path));
         log.info("DeleteRequest action: " + Paths.get(path, fileName));
     }
 

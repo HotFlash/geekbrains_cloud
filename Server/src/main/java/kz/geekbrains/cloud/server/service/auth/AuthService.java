@@ -9,7 +9,6 @@ import java.io.File;
 import java.nio.file.Paths;
 import java.sql.*;
 import java.util.HashMap;
-import java.util.Map;
 
 @Log4j2
 public class AuthService {
@@ -41,21 +40,52 @@ public class AuthService {
         }
     }
 
+    private String getUserByLogin(String login) {
+        String password;
+        int capacity;
+        ResultSet rs;
+        try (PreparedStatement ps = connection.prepareStatement("SELECT * FROM users WHERE login = ?")) {
+            ps.setString(1, login);
+            ps.execute();
+            rs = ps.getResultSet();
+            password = rs.getString("password");
+            capacity = rs.getInt("capacity");
+            ps.close();
+            rs.close();
+        } catch (SQLException e) {
+            log.error("no login found cause: " + e);
+            return null;
+        }
+        if (password == null) {
+            return null;
+        } else {
+            if (!password.isEmpty())
+            entries.put(login, new Entry(login, password, capacity));
+            return password;
+        }
+    }
+
+
     public boolean authUser(String login, String password) {
-        if (entries.get(login) == null) {
+        String rs = getUserByLogin(login);
+        log.info(entries);
+        if (rs == null) {
             return false;
         }
-        return entries.get(login).getPassword().equals(password);
+        if (rs.equals(password)) {
+            createFolder(Paths.get(Constants.SERVER_REP, login).toString());
+            return true;
+        }
+        return false;
     }
 
     public void start() {
         log.info("AuthService started");
 
         try {
+            createServerFolders();
             connect();
             createTable();
-            readUsers();
-            createFolders();
         } catch (SQLException e) {
             log.error(e);
             log.debug(e.toString(), e);
@@ -86,24 +116,57 @@ public class AuthService {
                                 rs.getString("password"),
                                 rs.getInt("capacity")));
             }
+
         }
     }
 
-    private void createFolders() {
+    private void createServerFolders() {
         createFolder(Constants.SERVER_REP);
-        for (Map.Entry<String, Entry> entry : entries.entrySet()) {
-            String login = entry.getKey();
-            createFolder(Paths.get(Constants.SERVER_REP, login).toString());
-        }
     }
 
     private void createFolder(String pathname) {
         File folder = new File(pathname);
         if (!folder.exists()) {
-            folder.mkdir();
-            log.info("Folder " + folder.getPath() + " created");
+            if (folder.mkdir()) {
+                log.info("Folder " + folder.getPath() + " created");
+            } else {
+                log.error("can't create folder: " + folder.getPath());
+            }
         }
     }
+
+    public Boolean ChangeUserPassword(String login, String password) {
+        try (PreparedStatement ps = connection.prepareStatement("UPDATE users SET password = ? WHERE login = ?;")) {
+            ps.setString(1, password);
+            ps.setString(2, login);
+            ps.executeUpdate();
+
+            entries.get(login).setPassword(password);
+            log.info("Password for User " + login + " updated ");
+            return true;
+        } catch (SQLException e) {
+            log.error("can't change the password cause: " + e);
+            return false;
+        }
+    }
+
+    public Integer ChangeUserCapacity(String login, int capacity) throws SQLException {
+        try (PreparedStatement ps = connection.prepareStatement("UPDATE users SET capacity = ? WHERE login = ?;")) {
+            ps.setInt(1, capacity);
+            ps.setString(2, login);
+            ps.executeUpdate();
+            entries.get(login).setCapacity(capacity);
+            log.info("Capacity for User " + login + " updated ");
+        }
+        return entries.get(login).getCapacity();
+    }
+
+    public Integer ReadCapacity(String login) throws SQLException {
+        return entries.get(login).getCapacity();
+
+    }
+
+
 
     public void stop() {
         log.info("AuthService stopped");

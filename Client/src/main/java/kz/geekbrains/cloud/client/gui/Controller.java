@@ -52,6 +52,9 @@ public class Controller implements Initializable {
 
     @FXML
     Label cloudSizeMessage;
+
+    @FXML
+    Label cloudSizeCapacity;
     @FXML
     GridPane regView;
     @FXML
@@ -66,6 +69,12 @@ public class Controller implements Initializable {
     @Getter
     @Setter
     String login;
+    @Getter
+    @Setter
+    Double currentUsage;
+    @Getter
+    @Setter
+    Double currentCapacity;
     @FXML
     GridPane authView;
 
@@ -123,12 +132,15 @@ public class Controller implements Initializable {
         filesTable.getItems().clear();
         filesTable.getItems().addAll(list);
         filesTable.sort();
-        double cloudSize = 0;
+        currentUsage = 0.0;
         for (FileInfo fileInfo : list) {
-            cloudSize += fileInfo.getSize();
+            currentUsage += fileInfo.getSize();
         }
-        showCloudUsage("Cloud size is: " + String.format("%,.2f Mb", cloudSize), Color.DARKBLUE);
+        showCloudUsage("Cloud size is: " + String.format("%,.2f Mb", currentUsage), Color.DARKBLUE);
+        showCapacity();
     }
+
+
 
     public void pathUpAction() {
         String path = pathField.getText();
@@ -147,6 +159,15 @@ public class Controller implements Initializable {
         cloudSizeMessage.setTextFill(color);
         cloudSizeMessage.setText(capacity);
         cloudSizeMessage.setVisible(true);
+    }
+
+    public String GetCloudUsage(){
+        return cloudSizeMessage.getText();
+    }
+    public void showCloudSize(String capacity, Color color) {
+        cloudSizeCapacity.setTextFill(color);
+        cloudSizeCapacity.setText(capacity);
+        cloudSizeCapacity.setVisible(true);
     }
 
     public void showRegMessage(String reason, Color color) {
@@ -189,6 +210,18 @@ public class Controller implements Initializable {
 
     public void deleteAction() {
         Delete.action(this);
+    }
+
+    public void showCapacity() {
+        Capacity.action(this, 0);
+    }
+
+    public void changeCapacity() {
+        Capacity.action(this, 1);
+    }
+
+    public void changeUserDetails() {
+        ChangeUsersDetails.action(this);
     }
 
     public void downloadAction() {

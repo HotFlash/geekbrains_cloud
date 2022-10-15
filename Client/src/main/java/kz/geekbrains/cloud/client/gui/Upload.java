@@ -24,10 +24,14 @@ public class Upload {
         TableView<FileInfo> filesTable = controller.getFilesTable();
         TextField pathField = controller.getPathField();
         NetworkClient networkClient = controller.getNetworkClient();
-
+        Double fileSize = null;
         File file = fileChooser.showOpenDialog(ClientApplication.getPrimaryStage());
 
         if (file != null) {
+            fileSize = (double) file.length() / (1024 * 1024);
+        }
+
+        if (file != null && controller.getCurrentCapacity() >= (fileSize + controller.currentUsage)) {
             List<FileInfo> list = filesTable.getItems();
             for (FileInfo fi : list) {
                 if (file.getName().equals(fi.getFileName())) {
@@ -37,7 +41,6 @@ public class Upload {
 
                     if (option.isPresent()) {
                         if (option.get() == ButtonType.OK) {
-                            log.info("File selected: " + file.getPath());
                             FileService.sendFile(networkClient.getChannelFuture().channel(), file, pathField.getText(), controller);
                             return;
                         }
@@ -47,9 +50,14 @@ public class Upload {
                     }
                 }
             }
-
-            log.info("File selected: " + file.getPath());
             FileService.sendFile(networkClient.getChannelFuture().channel(), file, pathField.getText(), controller);
+            controller.showCapacity();
+        } else if (file != null) {
+            Alert alert = new Alert(AlertType.WARNING);
+            alert.setTitle("No space for new file");
+            alert.setHeaderText(String.format("Current Capacity %,.2f Mb ", controller.currentUsage));
+            alert.setContentText(String.format("You trying to Upload file with size %,.2f Mb, is not enough space. Please increase the space!", fileSize));
+            alert.showAndWait();
         }
     }
 }

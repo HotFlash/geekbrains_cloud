@@ -8,7 +8,7 @@
            fx:controller="kz.geekbrains.cloud.client.gui.Controller">
     <VBox fx:id="mainView" alignment="CENTER" visible="false">
 
-        <HBox spacing="10">
+        <HBox spacing="5">
             <Button text="Upload" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
                     onAction="#uploadAction"/>
             <Button text="Download" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
@@ -17,9 +17,12 @@
                     onAction="#deleteAction"/>
             <Button text="Make directory" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
                     onAction="#makeDirectory"/>
-
+            <Button text="Change Capacity" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                    onAction="#changeCapacity"/>
+            <Button text="Change User" focusTraversable="false" HBox.hgrow="ALWAYS" maxWidth="Infinity"
+                    onAction="#changeUserDetails"/>
             <padding>
-                <Insets bottom="5" left="5" right="5" top="5"/>
+                <Insets bottom="3" left="3" right="3" top="3"/>
             </padding>
         </HBox>
         <HBox>
@@ -29,6 +32,13 @@
         <TableView fx:id="filesTable" VBox.vgrow="ALWAYS"/>
         <HBox spacing="10">
             <Label fx:id="cloudSizeMessage" text="Cloud Size is:" textAlignment="CENTER" textFill="DARKBLUE"
+                   HBox.hgrow="ALWAYS" visible="false" GridPane.columnIndex="1"
+                   GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
+                <font>
+                    <Font name="DEFAULT" size="15.0"/>
+                </font>
+            </Label>
+            <Label fx:id="cloudSizeCapacity" text="Actual Size:" textAlignment="CENTER" textFill="DARKBLUE"
                    HBox.hgrow="ALWAYS" visible="false" GridPane.columnIndex="1"
                    GridPane.halignment="CENTER" GridPane.rowIndex="3" GridPane.valignment="CENTER">
                 <font>
